@@ -172,12 +172,20 @@ resource "aws_cloudfront_distribution" "default" {
   tags = "${module.distribution_label.tags}"
 }
 
-module "dns" {
-  source           = "git::https://github.com/cloudposse/terraform-aws-route53-alias.git?ref=tags/0.2.7"
-  enabled          = "${var.enabled == "true" && (length(var.parent_zone_id) > 0 || length(var.parent_zone_name) > 0) ? "true" : "false"}"
-  aliases          = "${var.aliases}"
-  parent_zone_id   = "${var.parent_zone_id}"
-  parent_zone_name = "${var.parent_zone_name}"
-  target_dns_name  = "${aws_cloudfront_distribution.default.domain_name}"
-  target_zone_id   = "${aws_cloudfront_distribution.default.hosted_zone_id}"
+data "cloudflare_zones" "default" {
+  count   = "${var.enabled == "true" ? signum(length(compact(var.aliases))) : 0}"
+  filter {
+    name   = "${var.parent_zone_name}"
+    status = "active"
+    paused = false
+  }
+}
+
+resource "cloudflare_record" "img-dev" {
+  count   = "${var.enabled == "true" ? length(compact(var.aliases)) : 0}"
+  domain = "${lookup(data.cloudflare_zones.default.zones[0],"name")}"
+  name   = "${element(compact(var.aliases), count.index)}"
+  value  = "${aws_cloudfront_distribution.default.domain_name}"
+  type   = "CName"
+  ttl    = 3600
 }
