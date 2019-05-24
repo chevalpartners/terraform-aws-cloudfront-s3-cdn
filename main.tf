@@ -190,6 +190,6 @@ resource "cloudflare_record" "default" {
   domain = "${lookup(data.cloudflare_zones.default.zones[0],"name")}"
   name   = "${element(compact(var.aliases), count.index)}"
   value  = "${aws_cloudfront_distribution.default.domain_name}"
-  type   = "CName"
+  type   = "CNAME"
   ttl    = 3600
 }
