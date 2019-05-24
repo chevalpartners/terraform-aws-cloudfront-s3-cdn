@@ -181,7 +181,7 @@ data "cloudflare_zones" "default" {
   }
 }
 
-resource "cloudflare_record" "img-dev" {
+resource "cloudflare_record" "default" {
   count   = "${var.enabled == "true" ? length(compact(var.aliases)) : 0}"
   domain = "${lookup(data.cloudflare_zones.default.zones[0],"name")}"
   name   = "${element(compact(var.aliases), count.index)}"
