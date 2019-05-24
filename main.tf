@@ -57,6 +57,10 @@ resource "aws_s3_bucket" "origin" {
   tags          = "${module.origin_label.tags}"
   force_destroy = "${var.origin_force_destroy}"
   region        = "${data.aws_region.current.name}"
+  
+  versioning {
+    enabled = "${var.versioning_enabled}"
+  }
 
   cors_rule {
     allowed_headers = "${var.cors_allowed_headers}"
